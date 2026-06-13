@@ -1,5 +1,6 @@
 package com.disura.store_api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +33,7 @@ public class Customer {
     private Role role = Role.CUSTOMER;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("customer")
     private List<Order> orders;
 
     public enum Role {
