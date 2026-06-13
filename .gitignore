@@ -1,0 +1,25 @@
+# Java / Maven (store-api)
+target/
+*.class
+*.jar
+*.war
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# PHP / Composer (vendor-api-php)
+vendor/
+composer.lock
+
+# Environment files (sensitive data - don't commit passwords!)
+.env
+application-local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
