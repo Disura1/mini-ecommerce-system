@@ -1,5 +1,6 @@
 package com.disura.store_api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,5 +25,6 @@ public class Category {
     private String description;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("category")
     private List<Product> products;
 }
