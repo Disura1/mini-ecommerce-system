@@ -13,8 +13,14 @@ out/
 vendor/
 composer.lock
 
-# Environment files (sensitive data - don't commit passwords!)
+# Environment files (NEVER commit these)
 .env
+*.env
+
+# PHP database config with real credentials
+vendor-api-php/config/database.php
+
+# Spring Boot local properties
 application-local.properties
 
 # OS files
