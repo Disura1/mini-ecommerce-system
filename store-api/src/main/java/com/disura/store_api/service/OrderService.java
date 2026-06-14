@@ -4,7 +4,9 @@ import com.disura.store_api.dto.CreateOrderRequest;
 import com.disura.store_api.dto.OrderItemRequest;
 import com.disura.store_api.model.*;
 import com.disura.store_api.repository.OrderRepository;
+import com.disura.store_api.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,8 +18,13 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final CustomerService customerService;
     private final ProductService productService;
+    private final VendorApiService vendorApiService;
+
+    @Value("${vendor.api.low.stock.threshold}")
+    private int lowStockThreshold;
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -45,6 +52,17 @@ public class OrderService {
         for (OrderItemRequest itemRequest : request.getItems()) {
             Product product = productService.getProductById(itemRequest.getProductId());
 
+            // Decrement stock
+            int newStock = product.getStockQuantity() - itemRequest.getQuantity();
+            if (newStock < 0) {
+                throw new RuntimeException(
+                        "Insufficient stock for product: " + product.getName() +
+                                " (available: " + product.getStockQuantity() + ")"
+                );
+            }
+            product.setStockQuantity(newStock);
+            productRepository.save(product);
+
             OrderItem item = new OrderItem();
             item.setOrder(order);
             item.setProduct(product);
@@ -56,6 +74,11 @@ public class OrderService {
             total = total.add(
                     product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()))
             );
+
+            // Trigger restock if stock dropped below threshold
+            if (newStock < lowStockThreshold) {
+                vendorApiService.triggerRestockRequest(product.getName(), newStock);
+            }
         }
 
         order.setOrderItems(orderItems);
