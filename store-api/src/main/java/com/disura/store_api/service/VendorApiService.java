@@ -19,8 +19,6 @@ public class VendorApiService {
     @Value("${vendor.api.default.supplier.id}")
     private int defaultSupplierId;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-
     public void triggerRestockRequest(String productName, int currentStock) {
         try {
             String body = String.format(
@@ -29,13 +27,15 @@ public class VendorApiService {
                     defaultSupplierId, productName, currentStock
             );
 
+            HttpClient client = HttpClient.newHttpClient();
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(vendorApiUrl + "/api/restock-requests"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(
+            HttpResponse<String> response = client.send(
                     request,
                     HttpResponse.BodyHandlers.ofString()
             );
@@ -43,11 +43,13 @@ public class VendorApiService {
             if (response.statusCode() == 201) {
                 log.info("Restock request created for '{}' (stock: {})", productName, currentStock);
             } else {
-                log.warn("Vendor API returned {} for product '{}'", response.statusCode(), productName);
+                log.warn("Vendor API returned {} for product '{}': {}",
+                        response.statusCode(), productName, response.body());
             }
 
         } catch (Exception e) {
-            log.error("Failed to trigger restock for '{}': {}", productName, e.getMessage());
+            log.error("Failed to trigger restock for '{}': {} - {}",
+                    productName, e.getClass().getSimpleName(), e.getMessage());
         }
     }
 }
