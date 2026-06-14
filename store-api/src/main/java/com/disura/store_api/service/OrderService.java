@@ -1,5 +1,6 @@
 package com.disura.store_api.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.disura.store_api.dto.CreateOrderRequest;
 import com.disura.store_api.dto.OrderItemRequest;
 import com.disura.store_api.model.*;
@@ -39,6 +40,7 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
+    @Transactional
     public Order createOrder(CreateOrderRequest request) {
         Customer customer = customerService.getCustomerById(request.getCustomerId());
 

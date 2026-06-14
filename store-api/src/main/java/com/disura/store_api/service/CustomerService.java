@@ -3,6 +3,7 @@ package com.disura.store_api.service;
 import com.disura.store_api.model.Customer;
 import com.disura.store_api.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
@@ -28,6 +30,8 @@ public class CustomerService {
     }
 
     public Customer createCustomer(Customer customer) {
+        // Hash password on direct creation too
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         return customerRepository.save(customer);
     }
 
@@ -36,9 +40,9 @@ public class CustomerService {
         customer.setFullName(updatedCustomer.getFullName());
         customer.setEmail(updatedCustomer.getEmail());
 
-        // Only update password if a new one is provided
+        // Hash the new password if provided
         if (updatedCustomer.getPassword() != null && !updatedCustomer.getPassword().isBlank()) {
-            customer.setPassword(updatedCustomer.getPassword());
+            customer.setPassword(passwordEncoder.encode(updatedCustomer.getPassword()));
         }
 
         if (updatedCustomer.getRole() != null) {
