@@ -18,7 +18,9 @@ export default function LoginPage() {
             const { data } = await storeApi.post('/api/auth/login', form)
             // Decode JWT to get role
             const payload = JSON.parse(atob(data.token.split('.')[1]))
-            const role = payload.roles?.[0]?.replace('ROLE_', '') || 'CUSTOMER'
+            // Try common JWT role claim names
+            const rawRole = payload.roles?.[0] || payload.role || payload.authorities?.[0] || 'ROLE_CUSTOMER'
+            const role = rawRole.replace('ROLE_', '')
             login(data.token, { email: form.email, role })
             navigate('/dashboard')
         } catch {
